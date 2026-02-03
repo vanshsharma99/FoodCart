@@ -34,6 +34,7 @@ async function RegisterUser(req , res){
 
     res.status(201).json({
         message : "user register sucessfully",
+        token,
         user : {
             _id : user._id,
             Email : user.Email,
@@ -52,7 +53,7 @@ async function loginUser(req , res){
     })
 
     if(!user){
-        return res.status(400).json({
+        res.status(400).json({
             message : "invalid email or password"
         })
     }
@@ -60,7 +61,7 @@ async function loginUser(req , res){
     const isPasswordValid = await bcrypt.compare(password , user.password);
 
     if(!isPasswordValid){
-        return res.status(400).json({
+        res.status(400).json({
             message : "invalid email or password"
         }) 
     }
@@ -73,6 +74,7 @@ async function loginUser(req , res){
 
     res.status(200).json({
         message : "user loggedIn Successfully",
+        token,
         user : {
             _id : user._id,
             Email : user.Email,
@@ -140,7 +142,7 @@ async  function loginFoodPartner(req , res){
     })
 
     if(!foodParter){
-        return res.status(400).json({
+        res.status(400).json({
             message : "invalid foodpartner or password"
         })
     }
@@ -148,7 +150,7 @@ async  function loginFoodPartner(req , res){
     const isPasswordValid = await bcrypt.compare(password , foodParter.password);
 
     if(!isPasswordValid){
-        return res.status(400).json({
+        res.status(400).json({
             message : "invalid foodpartner or password"
         }) 
     }

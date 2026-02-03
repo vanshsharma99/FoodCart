@@ -16,7 +16,8 @@ const handleSubmit = async (e) => {
     },{
         withCredentials :true
     })
-    navigate('/view-food')
+    localStorage.setItem("token", response.data.token);
+    navigate('/')
   }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">

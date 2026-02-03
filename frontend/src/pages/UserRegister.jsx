@@ -23,7 +23,8 @@ const respose = await axios.post("http://localhost:3000/api/auth/user/register",
     withCredentials :true
 })
 
-navigate('/Home')
+localStorage.setItem("token", respose.data.token);
+navigate('/')
 }
 
 

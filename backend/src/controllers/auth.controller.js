@@ -1,11 +1,11 @@
-const usermodel = require('../models/user.model')
+const usermodel = require('../models/user.model');
+const foodPartnerModel = require('../models/foodpartner.model');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
 async function RegisterUser(req , res){
-    console.log("hello");
-    
     const{fullName , Email , password} = req.body;
+
 
     const isUserAlreadyExists = await usermodel.findOne({
         Email
@@ -25,9 +25,10 @@ async function RegisterUser(req , res){
         password: hashedPassword
     })
 
+   
     const token = jwt.sign({
         id : user._id
-    }, "43986008b6531d7e8fdf7295e654b6cb")
+    }, process.env.jwt_srt)
     
     res.cookie("token" ,token)
 
@@ -42,6 +43,146 @@ async function RegisterUser(req , res){
     
 }
 
+
+async function loginUser(req , res){
+  
+    const {Email , password} = req.body;
+    const user = await usermodel.findOne({
+        Email
+    })
+
+    if(!user){
+        return res.status(400).json({
+            message : "invalid email or password"
+        })
+    }
+
+    const isPasswordValid = await bcrypt.compare(password , user.password);
+
+    if(!isPasswordValid){
+        return res.status(400).json({
+            message : "invalid email or password"
+        }) 
+    }
+
+    const token = jwt.sign({
+        id : user._id,
+    }, process.env.jwt_srt)
+
+    res.cookie("token" ,token)
+
+    res.status(200).json({
+        message : "user loggedIn Successfully",
+        user : {
+            _id : user._id,
+            Email : user.Email,
+            fullName : user.fullName
+        }
+    })
+}
+
+function logoutUser(req , res){
+    res.clearCookie("token");
+    res.status(200).json({
+        message : "user logged out successfully"
+    });
+}
+
+async function registerFoodPartner(req , res){
+
+    const {RestaurantName , OwnerName , PhoneNumber , Address , email , password} = req.body;
+
+    const isAccountAlreadyExists = await foodPartnerModel.findOne({
+        email
+    })
+
+    if(isAccountAlreadyExists){
+        return res.status(400).json({
+            message : "food partner account already exists"
+        })
+    }
+
+    const hashedPassword = await bcrypt.hash(password ,10);
+
+    const foodPartner = await foodPartnerModel.create({
+       RestaurantName,
+       OwnerName,
+       PhoneNumber,
+       Address,
+       email,
+       password : hashedPassword,
+
+    })
+
+    const token = jwt.sign({
+        id : foodPartner._id,
+    }, process.env.jwt_srt)
+
+    res.cookie("token" , token)
+
+    res.status(201).json({
+        _id : foodPartner._id,
+        email : foodPartner.email,
+        RestaurantName : foodPartner.RestaurantName,
+        OwnerName : foodPartner.OwnerName,
+        PhoneNumber : foodPartner.PhoneNumber,
+        Address : foodPartner.Address
+    })
+}
+
+
+async  function loginFoodPartner(req , res){
+
+    const {email , password} = req.body;
+    
+    const foodParter = await foodPartnerModel.findOne({
+        email
+    })
+
+    if(!foodParter){
+        return res.status(400).json({
+            message : "invalid foodpartner or password"
+        })
+    }
+
+    const isPasswordValid = await bcrypt.compare(password , foodParter.password);
+
+    if(!isPasswordValid){
+        return res.status(400).json({
+            message : "invalid foodpartner or password"
+        }) 
+    }
+
+    const token = jwt.sign({
+        id : foodParter._id,
+    }, process.env.jwt_srt)
+
+    res.cookie("token" ,token)
+
+    res.status(200).json({
+        message : "foodpartner loggedIn Successfully",
+        foodParter : {
+            _id : foodParter._id,
+            email : foodParter.email,
+            name : foodParter.name
+        }
+    })
+
+}
+
+function logoutFoodPartner(req , res){
+
+    res.clearCookie("token");
+    res.status(200).json({
+        message : "food partner logout successfully"
+    });
+}
+
 module.exports ={
     RegisterUser,
+    loginUser,
+    logoutUser,
+    registerFoodPartner,
+    loginFoodPartner,
+    logoutFoodPartner
 }
